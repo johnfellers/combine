@@ -32,6 +32,31 @@ def process_simple_list(response, source, direction):
             data.append((i, indicator_type(i), direction, source, '', current_date))
     return data
 
+def process_blocklist(response, source, direction):
+    data = []
+    current_date = str(datetime.date.today())
+    # create a tag for the indicator based off the type of feed that is being pulled
+    # split the source url and set temptag to the right-most value
+    temptag = source.rpartition('/')
+    # make sure that temptag doesnt start with http
+    if not temptag[2].startswith('http'):
+        # strip of the txt extension
+        tag = temptag[2].rstrip('.txt')
+        if tag not in 'bots, bruteforcelogin':
+            tag = tag+" attacks"
+        elif tag in 'bruteforcelogin':
+            tag = "web login attacks"
+        else:
+            tag = tag
+    else:
+        tag = ''
+    # add additional tag based on the direction of the threat
+    tag = tag +','+ direction
+    for line in response.splitlines():
+        if not line.startswith('#') and not line.startswith('/') and not line.startswith('Export date') and len(line) > 0:
+            i = line.split()[0]
+            data.append((i, indicator_type(i), direction, source, tag, current_date))
+    return data
 
 def process_sans(response, source, direction):
     data = []
@@ -161,7 +186,7 @@ def thresh(input_file, output_file):
 
     harvest = []
     # TODO: replace with a proper plugin system (cf. #23)
-    thresher_map = {'blocklist.de': process_simple_list,
+    thresher_map = {'blocklist.de': process_blocklist,
                     'openbl': process_simple_list,
                     'projecthoneypot': process_project_honeypot,
                     'ciarmy': process_simple_list,
