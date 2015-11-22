@@ -35,28 +35,6 @@ def process_simple_list(response, source, direction):
 def process_blocklist(response, source, direction):
     data = []
     current_date = str(datetime.date.today())
-    temptag = source.rpartition('/')
-    if not temptag[2].startswith('http'):
-        tag = temptag[2].rstrip('.txt')
-        if tag not in 'bots, bruteforcelogin':
-            tag = tag+" attacks"
-        elif tag in 'bruteforcelogin':
-            tag = "web login attacks"
-        else:
-            tag = tag
-    else:
-        tag = ''
-    tag = tag +','+ direction
-    for line in response.splitlines():
-        if not line.startswith('#') and not line.startswith('/') and not line.startswith('Export date') and len(line) > 0:
-            i = line.split()[0]
-            data.append((i, indicator_type(i), direction, source, tag, current_date))
-    return data
-
-
-def process_blocklist(response, source, direction):
-    data = []
-    current_date = str(datetime.date.today())
     # create a tag for the indicator based off the type of feed that is being pulled
     # split the source url and set temptag to the right-most value
     temptag = source.rpartition('/')
