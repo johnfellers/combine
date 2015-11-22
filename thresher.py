@@ -92,6 +92,7 @@ def process_drg(response, source, direction):
     data = []
     current_date = str(datetime.date.today())
     for line in response.splitlines():
+        # need to check line for ssh or vnc
         if not line.startswith('#') and len(line) > 0:
             i = line.split('|')[2].strip()
             data.append((i, indicator_type(i), direction, source, '', current_date))
@@ -102,13 +103,21 @@ def process_alienvault(response, source, direction):
     data = []
     current_date = str(datetime.date.today())
     for line in response.splitlines():
+        # 127.0.0.1#3#2#Malicious Host;Scanning Host#US#Houston#29.763299942,-95.3632965088#3;11
+	# need to split the notes section on the ';' and add each as a bucket_list tag
         if not line.startswith('#') and len(line) > 0:
+            direction = ''
+            note = ''
             i = line.partition('#')[0].strip()
-            note = line.split('#')[3].strip()
-            if 'Scanning Host' in note or 'Spamming' in note:
+            notes = line.split('#')[3].strip()
+            temp = notes.split(';')
+            # need to append direction tags as some notes contain spamming and malware
+            if 'Scanning Host' in notes or 'Spamming' in notes:
                 direction = 'inbound'
-            elif 'Malware' in note or 'C&C' in note or 'APT' in note:
+            elif 'Malware' in notes or 'C&C' in notes or 'APT' in notes:
                 direction = 'outbound'
+            for i in temp:
+                note = note+i+','
             data.append((i, indicator_type(i), direction, source, note, current_date))
     return data
 
