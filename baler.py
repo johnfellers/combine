@@ -112,8 +112,7 @@ def bale_CRITs_indicator(base_url, data, indicator_que):
     else:
         logger.info('Lacking a default indicator confidence, we will default to Low.')
         data['indicator_confidence'] = 'low'
-    # move url initialization here because all objects are imported
-    # as indicators
+    # move url initialization here because all objects are imported as indicators
     url = base_url + 'indicators/'
     while not indicator_que.empty():
         indicator = indicator_que.get()
@@ -122,8 +121,11 @@ def bale_CRITs_indicator(base_url, data, indicator_que):
             data['value'] = indicator[0]
             data['type'] = 'Address - ipv4-addr'
             data['reference'] = indicator[3]
+
             # set the tags associated with the indicator
-            data['bucket_list'] = indicator[4]
+            # note: this needs to be fixed as each feed has different forms of data
+            # data['bucket_list'] = indicator[4]
+
             # getting the source automatically:
             source = re.findall(r'\/\/(.*?)\/', data['reference'])
             if source:
@@ -136,8 +138,12 @@ def bale_CRITs_indicator(base_url, data, indicator_que):
             data['add_domain'] = "true"
             data['value'] = indicator[0]
             data['type'] = 'URI - Domain Name'
-            data['bucket_list'] = indicator[4]
             data['reference'] = indicator[3]
+
+            # set the tags associated with the indicator
+            # note: this needs to be fixed as each feed has different forms of data
+            # data['bucket_list'] = indicator[4]
+
             # getting the source automatically:
             source = re.findall(r'\/\/(.*?)\/', data['reference'])
             if source:
