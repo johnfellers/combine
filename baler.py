@@ -106,15 +106,24 @@ def bale_enr_csvgz(harvest, output_file):
 
 def bale_CRITs_indicator(base_url, data, indicator_que):
     """ One thread of adding indicators to CRITs"""
+    # set the confidence level from the config
+    if config.has_option('Baler', 'default_indicator_confidence'):
+        data['indicator_confidence'] = config.get('Baler', 'default_indicator_confidence')
+    else:
+        logger.info('Lacking a default indicator confidence, we will default to Low.')
+        data['indicator_confidence'] = 'low'
+    # move url initialization here because all objects are imported
+    # as indicators
+    url = base_url + 'indicators/'
     while not indicator_que.empty():
         indicator = indicator_que.get()
         if indicator[1] == 'IPv4':
-            # using the IP API
-            url = base_url + 'ips/'
-            data['add_indicator'] = "true"
-            data['ip'] = indicator[0]
-            data['ip_type'] = 'Address - ipv4-addr'
+            # set the indicator object variables
+            data['value'] = indicator[0]
+            data['type'] = 'Address - ipv4-addr'
             data['reference'] = indicator[3]
+            # set the tags associated with the indicator
+            data['bucket_list'] = indicator[4]
             # getting the source automatically:
             source = re.findall(r'\/\/(.*?)\/', data['reference'])
             if source:
@@ -124,9 +133,10 @@ def bale_CRITs_indicator(base_url, data, indicator_que):
                 logger.info("Issues with adding: %s" % data['ip'])
         elif indicator[1] == "FQDN":
             # using the Domain API
-            url = base_url + 'domains/'
-            data['add_indicator'] = "true"
-            data['domain'] = indicator[0]
+            data['add_domain'] = "true"
+            data['value'] = indicator[0]
+            data['type'] = 'URI - Domain Name'
+            data['bucket_list'] = indicator[4]
             data['reference'] = indicator[3]
             # getting the source automatically:
             source = re.findall(r'\/\/(.*?)\/', data['reference'])
